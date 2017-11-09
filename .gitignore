@@ -1,5 +1,7 @@
 data_set/
-data_set.zip
+*.zip
 *.h5
 *.swp
 *.swo
+*.swn
+
