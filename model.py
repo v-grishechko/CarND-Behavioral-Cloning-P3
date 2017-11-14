@@ -4,6 +4,11 @@ import numpy as np
 
 samples = []
 
+#with open('transfer_data_set/driving_log.csv') as csvfile:
+#    reader = csv.reader(csvfile)
+#    for line in reader:
+#        samples.append(line)
+
 with open('data_set/driving_log.csv') as csvfile:
     reader = csv.reader(csvfile)
     for line in reader:
@@ -11,15 +16,15 @@ with open('data_set/driving_log.csv') as csvfile:
 
 from sklearn.model_selection import train_test_split
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
-
+print("Samples size:{}".format(len(samples) / 3))
 import cv2
 import numpy as np
 import sklearn
 from sklearn.utils import shuffle
 
-def generator(samples, batch_size=124):
+def generator(samples, batch_size=32):
     num_samples = len(samples)
-    correction = 0.2
+    correction = 0.25
     while 1: # Loop forever so the generator never terminates
         shuffle(samples)
         for offset in range(0, num_samples, batch_size):
@@ -60,7 +65,7 @@ def generator(samples, batch_size=124):
             y_train = np.array(angles)
             yield sklearn.utils.shuffle(X_train, y_train)
 
-def process_image(image, top = 70, bottom = 25):
+def process_image(image, top = 65, bottom = 25):
     return image
 
 def flip_image(image):
@@ -71,7 +76,7 @@ train_generator = generator(train_samples)
 validation_generator = generator(validation_samples)
 
 ch, row, col = 3, 160, 320  # Trimmed image format
-epoch = 10
+epoch = 8
 
 import keras
 from keras.models import Sequential
@@ -80,8 +85,8 @@ from keras.layers import Flatten, Dense, Conv2D, Lambda, Cropping2D
 #Model
 print(keras.__version__)
 model = Sequential()
-model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(row, col, ch)))
-model.add(Cropping2D(cropping=((60,25), (1, 1))))
+model.add(Lambda(lambda x: x / 127.5 - 1, input_shape=(row, col, ch)))
+model.add(Cropping2D(cropping=((65,25), (1, 1))))
 model.add(Conv2D(24, 5, 5,  subsample=(2,2), activation='relu'))
 print(model.layers[-1].output_shape)
 model.add(Conv2D(36, 5, 5, subsample=(2,2), activation='relu'))
