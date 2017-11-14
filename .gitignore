@@ -1,4 +1,5 @@
 data_set/
+transfer_data_set/
 *.zip
 *.h5
 *.swp
