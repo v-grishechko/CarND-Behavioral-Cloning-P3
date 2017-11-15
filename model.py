@@ -4,24 +4,23 @@ import numpy as np
 
 samples = []
 
-#with open('transfer_data_set/driving_log.csv') as csvfile:
-#    reader = csv.reader(csvfile)
-#    for line in reader:
-#        samples.append(line)
-
+#Read lines from csv file
 with open('data_set/driving_log.csv') as csvfile:
     reader = csv.reader(csvfile)
     for line in reader:
         samples.append(line)
 
+#Divide data into train and test data set
 from sklearn.model_selection import train_test_split
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
-print("Samples size:{}".format(len(samples) / 3))
+
 import cv2
 import numpy as np
 import sklearn
 from sklearn.utils import shuffle
 
+#There used generator, which protect from OOM (Out of memory)
+#Also data augumented (flipped horizontally)
 def generator(samples, batch_size=32):
     num_samples = len(samples)
     correction = 0.25
@@ -66,6 +65,7 @@ def generator(samples, batch_size=32):
             yield sklearn.utils.shuffle(X_train, y_train)
 
 def process_image(image, top = 65, bottom = 25):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return image
 
 def flip_image(image):
@@ -75,8 +75,8 @@ def flip_image(image):
 train_generator = generator(train_samples)
 validation_generator = generator(validation_samples)
 
-ch, row, col = 3, 160, 320  # Trimmed image format
-epoch = 8
+ch, row, col = 3, 160, 320  # Image format
+epoch = 8 #Epochs
 
 import keras
 from keras.models import Sequential
@@ -88,22 +88,15 @@ model = Sequential()
 model.add(Lambda(lambda x: x / 127.5 - 1, input_shape=(row, col, ch)))
 model.add(Cropping2D(cropping=((65,25), (1, 1))))
 model.add(Conv2D(24, 5, 5,  subsample=(2,2), activation='relu'))
-print(model.layers[-1].output_shape)
 model.add(Conv2D(36, 5, 5, subsample=(2,2), activation='relu'))
-print(model.layers[-1].output_shape)
 model.add(Conv2D(48, 3, 3, activation='relu'))
-print(model.layers[-1].output_shape)
 model.add(Conv2D(64, 3, 3, activation='relu'))
-print(model.layers[-1].output_shape)
 model.add(Flatten())
-
-print(model.layers[-1].output_shape)
 model.add(Dense(100))
 model.add(Dense(50))
 model.add(Dense(10))
 model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
-#model.load_weights("transfer.h5")
 model.fit_generator(train_generator, samples_per_epoch= len(train_samples),\
                     validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=epoch)
 

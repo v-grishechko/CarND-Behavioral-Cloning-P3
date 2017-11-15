@@ -1,10 +1,10 @@
 data_set/
 transfer_data_set/
 *.zip
-*.h5
 *.swp
 *.swo
 *.swn
+transfer.h5
 .idea/
 run1
 .DS_Store
