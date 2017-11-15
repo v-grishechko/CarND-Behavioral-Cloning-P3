@@ -5,4 +5,6 @@ transfer_data_set/
 *.swp
 *.swo
 *.swn
-
+.idea/
+run1
+.DS_Store
